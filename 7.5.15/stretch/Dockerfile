@@ -1,5 +1,6 @@
 FROM debian:stretch-slim
 LABEL maintainer "Dave Curylo <dave@curylo.org>, Michael Hendricks <michael@ndrix.org>"
+RUN mkdir -p /usr/share/man/man1
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     libarchive13 \
@@ -14,7 +15,8 @@ RUN apt-get update && \
     unixodbc \
     odbc-postgresql \
     tdsodbc \
-    libmariadbclient18 && \
+    libmariadbclient18 \
+    openjdk-8-jdk junit zip unzip ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 RUN SWIPL_VER=7.5.15 && \
     SWIPL_CHECKSUM=aca07ce9c564e608586e7ae7b9a56c82ca5dd919cde1a1edf1121efa16bda568 && \
@@ -29,10 +31,11 @@ RUN SWIPL_VER=7.5.15 && \
     cd swipl-$SWIPL_VER && \
     cp build.templ build && \
     sed -i '/PREFIX=$HOME/c\PREFIX=/swipl' build && \
-    sed -i '/# export DISABLE_PKGS/c\export DISABLE_PKGS="jpl xpce"' build && \
+    sed -i '/# export DISABLE_PKGS/c\export DISABLE_PKGS="xpce"' build && \
     sed -i '/# export EXTRA_PKGS/c\export EXTRA_PKGS="db space"' build && \
     chmod u+x build && ./build && \
     apt-get purge -y --auto-remove $BUILD_DEPS && \
     cd /usr/bin && rm -rf /tmp/src && ln -s /swipl/bin/swipl swipl && rm -rf /var/lib/apt/lists/*
 ENV LANG C.UTF-8
+ENV LD_LIBRARY_PATH /usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64/server:/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64
 CMD ["swipl"]
