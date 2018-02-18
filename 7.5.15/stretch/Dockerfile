@@ -16,7 +16,7 @@ RUN apt-get update && \
     odbc-postgresql \
     tdsodbc \
     libmariadbclient18 \
-    openjdk-8-jdk junit zip unzip ca-certificates curl && \
+    openjdk-8-jdk junit zip unzip ca-certificates curl binutils git openssh-client && \
     rm -rf /var/lib/apt/lists/*
 RUN SWIPL_VER=7.5.15 && \
     SWIPL_CHECKSUM=aca07ce9c564e608586e7ae7b9a56c82ca5dd919cde1a1edf1121efa16bda568 && \
@@ -37,6 +37,7 @@ RUN SWIPL_VER=7.5.15 && \
     apt-get purge -y --auto-remove $BUILD_DEPS && \
     cd /usr/bin && rm -rf /tmp/src && ln -s /swipl/bin/swipl swipl && rm -rf /var/lib/apt/lists/*
 RUN curl -sL https://download.docker.com/linux/static/stable/x86_64/docker-17.12.0-ce.tgz | tar zxvf - --strip 1 -C /usr/local/bin docker/docker
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod 0755 kubectl && mv kubectl /usr/local/bin
 ENV LANG C.UTF-8
 ENV LD_LIBRARY_PATH /usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64/server:/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64
 CMD ["swipl"]
