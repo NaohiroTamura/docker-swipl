@@ -16,11 +16,11 @@ RUN apt-get update && \
     odbc-postgresql \
     tdsodbc \
     libmariadbclient18 \
-    openjdk-8-jdk junit zip unzip ca-certificates curl binutils git openssh-client && \
+    openjdk-8-jdk junit zip unzip ca-certificates curl binutils git openssh-client make procps && \
     rm -rf /var/lib/apt/lists/*
 RUN SWIPL_VER=7.5.15 && \
     SWIPL_CHECKSUM=aca07ce9c564e608586e7ae7b9a56c82ca5dd919cde1a1edf1121efa16bda568 && \
-    BUILD_DEPS='make gcc wget libarchive-dev libgmp-dev libossp-uuid-dev libpcre3-dev libreadline-dev libedit-dev libssl-dev zlib1g-dev libdb-dev libgeos-dev libspatialindex-dev unixodbc-dev' && \
+    BUILD_DEPS='gcc wget libarchive-dev libgmp-dev libossp-uuid-dev libpcre3-dev libreadline-dev libedit-dev libssl-dev zlib1g-dev libdb-dev libgeos-dev libspatialindex-dev unixodbc-dev' && \
     apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS && \
     mkdir /tmp/src && \
     cd /tmp/src && \
