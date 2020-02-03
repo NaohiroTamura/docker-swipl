@@ -1,6 +1,13 @@
+#
+# JPL enabled SWI Prolog 8.0.3
+# https://github.com/NaohiroTamura/docker-swipl/tree/swi-8.0.3-jpl
+#
+# $ docker build -t nao16t/swipl8jpl .
+#
 FROM debian:stretch-slim
 LABEL maintainer "Dave Curylo <dave@curylo.org>, Michael Hendricks <michael@ndrix.org>"
-RUN apt-get update && \
+RUN mkdir -p /usr/share/man/man1 && \
+    apt-get update && \
     apt-get install -y --no-install-recommends \
     libarchive13 \
     libgmp10 \
@@ -18,14 +25,17 @@ RUN apt-get update && \
     libmariadbclient18 \
     libsqlite3-0 \
     libserd-0-0 \
-    libraptor2-0 && \
+    libraptor2-0 \
+    openjdk-8-jdk junit zip unzip curl binutils git openssh-client make procps \
+    iputils-ping iproute2 traceroute dnsutils tcpdump kafkacat socat net-tools vim-tiny gettext-base expect && \
+    rm -rf /usr/share/man/man1 && \
     dpkgArch="$(dpkg --print-architecture)" && \
     { [ "$dpkgArch" = 'armhf' ] || [ "$dpkgArch" = 'armel' ] || apt-get install -y --no-install-recommends librocksdb4.5; } && \
     rm -rf /var/lib/apt/lists/*
 RUN set -eux; \
     SWIPL_VER=8.0.3; \
     SWIPL_CHECKSUM=cee59c0a477c8166d722703f6e52f962028f3ac43a5f41240ecb45dbdbe2d6ae; \
-    BUILD_DEPS='make cmake gcc g++ wget git autoconf libarchive-dev libgmp-dev libossp-uuid-dev libpcre3-dev libreadline-dev libedit-dev libssl-dev zlib1g-dev libdb-dev unixodbc-dev libsqlite3-dev libserd-dev libraptor2-dev libgeos++-dev libspatialindex-dev'; \
+    BUILD_DEPS='cmake gcc g++ wget git autoconf libarchive-dev libgmp-dev libossp-uuid-dev libpcre3-dev libreadline-dev libedit-dev libssl-dev zlib1g-dev libdb-dev unixodbc-dev libsqlite3-dev libserd-dev libraptor2-dev libgeos++-dev libspatialindex-dev'; \
     dpkgArch="$(dpkg --print-architecture)"; \
     [ "$dpkgArch" = 'armhf' ] || [ "$dpkgArch" = 'armel' ] || BUILD_DEPS="$BUILD_DEPS librocksdb-dev"; \
     apt-get update; apt-get install -y --no-install-recommends $BUILD_DEPS; rm -rf /var/lib/apt/lists/*; \
@@ -39,7 +49,6 @@ RUN set -eux; \
     cd swipl-$SWIPL_VER/build; \
     cmake -DCMAKE_BUILD_TYPE=Release \
           -DSWIPL_PACKAGES_X=OFF \
-	  -DSWIPL_PACKAGES_JAVA=OFF \
 	  -DCMAKE_INSTALL_PREFIX=/usr \
           ..; \
     # LANG=C.UTF8 is a work-around for a 7.7.22 bug
@@ -65,5 +74,10 @@ RUN set -eux; \
     [ "$dpkgArch" = 'armhf' ] || [ "$dpkgArch" = 'armel' ] ||  install_addin hdt https://github.com/JanWielemaker/hdt.git e0a0eff87fc3318434cb493690c570e1255ed30e; \
     install_addin rserve_client https://github.com/JanWielemaker/rserve_client.git befdfab843d71bdabbe9574348697a6fe5be4fc3; \
     apt-get purge -y --auto-remove $BUILD_DEPS
+RUN curl -sL https://download.docker.com/linux/static/stable/x86_64/docker-19.03.5.tgz | tar zxvf - --strip 1 -C /usr/local/bin docker/docker
+RUN curl -LO https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl && chmod 0755 kubectl && mv kubectl /usr/local/bin
+RUN curl -L https://github.com/openshift/source-to-image/releases/download/v1.2.0/source-to-image-v1.2.0-2a579ecd-linux-amd64.tar.gz | tar zxvf - -C /usr/local/bin ./s2i
 ENV LANG C.UTF-8
+ENV LD_LIBRARY_PATH /usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64/server:/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre/lib/amd64
+COPY http_ssl_plugin.pl /usr/lib/swipl/library/http/http_ssl_plugin.pl
 CMD ["swipl"]
